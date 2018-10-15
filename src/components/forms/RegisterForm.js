@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 import { Link } from 'react-router-dom'
 
-import api from '../../api/account'
+import { auth, database } from '../../firebase'
 
 import DWDPaper from '../DWDPaper'
 import DWDDivider from '../DWDDivider'
@@ -27,7 +27,8 @@ const styles = (theme) => ({
 class RegisterForm extends Component {
 
     static propTypes = {
-        classes: PropTypes.any
+        classes: PropTypes.any,
+        history: PropTypes.any
     }
 
     constructor(props) {
@@ -40,7 +41,11 @@ class RegisterForm extends Component {
             company: '',
             country: '',
             postalCode: '',
-            number: ''
+            number: '',
+            errorMessage: {
+                general: '',
+                email: ''
+            }
         }
     }
 
@@ -67,21 +72,39 @@ class RegisterForm extends Component {
      */
     onSubmit = async(event) => {
         event.preventDefault()
+
+        // Reset the error message
+        let errorMessage = {
+            general: '',
+            email: ''
+        }
         try {
-            const account = {
-                ...this.state
-            }
-            const response = await api.register(account)
-            if (response.status === 'success') {
-                // Show successful login message
+            const { email, password, firstName, lastName, company, country, postalCode, number } = this.state
+            const response = await auth.doCreateUserWithEmailAndPassword(email, password)
+            const user = response.user
+            await database.createAccountInfo(user.uid, email, firstName, lastName, company, country, postalCode, number)
+            if (user.emailVerified) {
+                this.props.history.push('/account')
+            } else {
+                this.props.history.push('/validate-email')
             }
         } catch (error) {
-            // Handle some error
+            console.log(error)
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    errorMessage.email = 'Dit e-mailadres is al in gebruik'
+                    break
+                default:
+                    errorMessage.general = 'Onbekende fout opgetreden'
+                    break
+            }
         }
+        this.setState( { errorMessage } )
     }
 
     render() {
         const { classes } = this.props
+        const { errorMessage } = this.state
 
         return (
             <DWDPaper>
@@ -89,14 +112,22 @@ class RegisterForm extends Component {
                     Registreren
                 </Typography>
                 <DWDDivider />
-                
+
+                <Typography component='p' color='error'>
+                    { errorMessage.general }
+                </Typography>
+
                 <form onSubmit={ this.onSubmit }>
                     <Typography component='h3' variant='h6'>
                         Login gegevens
                     </Typography>
                     <DWDDivider />
 
-                    <FormControl margin='normal' required fullWidth>
+                    <FormControl
+                        margin='normal'
+                        error={ errorMessage.email !== '' }
+                        required
+                        fullWidth>
                         <InputLabel htmlFor='email'>E-mailadres</InputLabel>
                         <Input
                             id='email'
@@ -105,6 +136,7 @@ class RegisterForm extends Component {
                             onChange={ this.onChange }
                             value={ this.state.email }
                             autoFocus />
+                        <FormHelperText>{ errorMessage.email }</FormHelperText>
                     </FormControl>
 
                     <FormControl margin='normal' required fullWidth>
@@ -112,6 +144,7 @@ class RegisterForm extends Component {
                         <Input
                             id='password'
                             name='password'
+                            type='password'
                             onChange={ this.onChange }
                             value={ this.state.password } />
                         <FormHelperText>Gebruik minimaal 8 tekens</FormHelperText>

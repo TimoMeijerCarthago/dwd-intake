@@ -2,36 +2,48 @@ import React, { Component } from 'react'
 
 import './styles/app.scss'
 
-import { Router, Route, Switch } from 'react-router'
+import { Router } from 'react-router'
 import createBrowserHistory from 'history/createBrowserHistory'
+
+import { firebase } from './firebase'
 
 import Grid from '@material-ui/core/Grid'
 
 import Header from './components/headers/Header'
-import Welcome from './components/dashboards/Welcome'
-import LoginForm from './components/forms/LoginForm'
-import RegisterForm from './components/forms/RegisterForm'
+import Routes from "./components/navigation/Routes";
 
 const history = createBrowserHistory()
 
 class App extends Component {
 
+    constructor(props) {
+        super(props)
+
+        this.state = {
+            authUser: null
+        }
+    }
+
+    componentDidMount() {
+        firebase.auth.onAuthStateChanged((authUser) => {
+            // eslint-disable-next-line no-unused-expressions
+            authUser ? this.setState({ authUser }) : this.setState({ authUser: null })
+        })
+    }
+
     render() {
+        const { authUser } = this.state
+
         return (
             <div className='app'>
                 <header className='app-header'>
 
                     <Router history={ history }>
                         <div className='app-container'>
-                            <Header />
+                            <Header authUser={ authUser }/>
 
                             <Grid container>
-                                <Switch>
-                                    <Route path='/login' exact component={ LoginForm }/>
-                                    <Route path='/register' exact component={ RegisterForm } />
-                                    <Route path='/' component={ Welcome } />
-                                    <Route path='*' component={ Welcome }/>
-                                </Switch>
+                                <Routes authUser={ authUser } />
                             </Grid>
                         </div>
                     </Router>

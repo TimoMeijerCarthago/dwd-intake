@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 import { Link } from 'react-router-dom'
 
-import api from '../../api/account'
+import { auth } from '../../firebase'
 
 import DWDPaper from '../DWDPaper'
 import DWDDivider from '../DWDDivider'
@@ -14,8 +14,10 @@ import FormControl from '@material-ui/core/FormControl'
 import InputLabel from '@material-ui/core/InputLabel'
 import Input from '@material-ui/core/Input'
 import Button from '@material-ui/core/Button'
+import FormHelperText from '@material-ui/core/FormHelperText/FormHelperText'
 
 import withStyles from '@material-ui/core/styles/withStyles'
+
 
 const styles = (theme) => ({
     button: {
@@ -26,7 +28,8 @@ const styles = (theme) => ({
 class LoginForm extends Component {
 
     static propTypes = {
-        classes: PropTypes.any
+        classes: PropTypes.any,
+        history: PropTypes.any
     }
 
     constructor(props) {
@@ -36,6 +39,10 @@ class LoginForm extends Component {
             account: {
                 email: '',
                 password: ''
+            },
+            errorMessage: {
+                general: '',
+                email: ''
             }
         }
     }
@@ -63,18 +70,37 @@ class LoginForm extends Component {
      */
     onSubmit = async(event) => {
         event.preventDefault()
+
+        // Reset the error message
+        let errorMessage = {
+            general: '',
+            email: ''
+        }
         try {
-            const response = await api.login(this.state.account)
-            if (response.status === 'success') {
-                // Show successful login message
+            const { email, password } = this.state.account
+            const response = await auth.doSignInWithEmailAndPassword(email, password)
+            const user = response.user
+            if (user.emailVerified) {
+                this.props.history.push('/account')
+            } else {
+                this.props.history.push('/validate-email')
             }
         } catch (error) {
-            // Handle some error
+            switch (error.code) {
+                case 'auth/user-not-found':
+                    errorMessage.email = 'Invalide e-mailadres/wachtwoord combinatie'
+                    break
+                default:
+                    errorMessage.general = 'Onbekende fout opgetreden'
+                    break
+            }
         }
+        this.setState( { errorMessage } )
     }
 
     render() {
         const { classes } = this.props
+        const { errorMessage } = this.state
 
         return (
             <DWDPaper>
@@ -83,8 +109,16 @@ class LoginForm extends Component {
                 </Typography>
                 <DWDDivider />
 
+                <Typography component='' color='error'>
+                    { errorMessage.general }
+                </Typography>
+
                 <form onSubmit={ this.onSubmit }>
-                    <FormControl margin='normal' required fullWidth>
+                    <FormControl
+                        margin='normal'
+                        error={ errorMessage.email !== '' }
+                        required
+                        fullWidth>
                         <InputLabel htmlFor='email'>E-mailadres</InputLabel>
                         <Input
                             id='email'
@@ -96,13 +130,19 @@ class LoginForm extends Component {
                             autoFocus />
                     </FormControl>
 
-                    <FormControl margin='normal' required fullWidth>
+                    <FormControl
+                        margin='normal'
+                        error={ errorMessage.email !== '' }
+                        required
+                        fullWidth>
                         <InputLabel htmlFor='password'>Wachtwoord</InputLabel>
                         <Input
                             id='password'
                             name='password'
+                            type='password'
                             onChange={ this.onChange }
                             value={ this.state.account.password } />
+                        <FormHelperText>{ errorMessage.email }</FormHelperText>
                     </FormControl>
 
                     <Button

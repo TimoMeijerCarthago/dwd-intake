@@ -4,6 +4,8 @@ import PropTypes from 'prop-types'
 
 import { Link } from 'react-router-dom'
 
+import { auth } from '../../firebase'
+
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
@@ -27,11 +29,16 @@ const styles = {
 class Header extends Component {
 
     static propTypes = {
-        classes: PropTypes.any
+        classes: PropTypes.any,
+        authUser: PropTypes.object
+    }
+
+    logout = () => {
+        auth.doSignOut()
     }
 
     render() {
-        const { classes } = this.props;
+        const { classes, authUser } = this.props
 
         return (
             <div className={ classes.root }>
@@ -41,9 +48,13 @@ class Header extends Component {
                             Drukwerkdeal intake
                         </Typography>
 
-                        <Link to='/login'>
-                            <Button className={ classes.login }>Inloggen / Registreren</Button>
-                        </Link>
+                        { authUser !== null ?
+                            <Button className={ classes.login } onClick={ this.logout }>Uitloggen</Button>
+                            :
+                            <Link to='/login'>
+                                <Button className={ classes.login }>Inloggen / Registreren</Button>
+                            </Link>}
+
                     </Toolbar>
                 </AppBar>
             </div>
