@@ -4,7 +4,10 @@ import PropTypes from 'prop-types'
 
 import { Link } from 'react-router-dom'
 
+import api from '../../api/account'
+
 import DWDPaper from '../DWDPaper'
+import DWDDivider from '../DWDDivider'
 
 import Typography from '@material-ui/core/Typography'
 import FormControl from '@material-ui/core/FormControl'
@@ -41,6 +44,12 @@ class RegisterForm extends Component {
         }
     }
 
+    /**
+     * Handle the change event for the input fields
+     *
+     * @param {Event} event the input event
+     * @return {void}
+     */
     onChange = (event) => {
         const name = event.target.name
         const value = event.target.value
@@ -48,6 +57,27 @@ class RegisterForm extends Component {
         let state = this.state
         state[name] = value
         this.setState(state)
+    }
+
+    /**
+     * Handle the submit of the form
+     *
+     * @param {Event} event the submit event
+     * @return {Promise<void>} -
+     */
+    onSubmit = async(event) => {
+        event.preventDefault()
+        try {
+            const account = {
+                ...this.state
+            }
+            const response = await api.register(account)
+            if (response.status === 'success') {
+                // Show successful login message
+            }
+        } catch (error) {
+            // Handle some error
+        }
     }
 
     render() {
@@ -58,16 +88,20 @@ class RegisterForm extends Component {
                 <Typography component='h1' variant='h4'>
                     Registreren
                 </Typography>
-                <form>
+                <DWDDivider />
+                
+                <form onSubmit={ this.onSubmit }>
                     <Typography component='h3' variant='h6'>
                         Login gegevens
                     </Typography>
+                    <DWDDivider />
 
                     <FormControl margin='normal' required fullWidth>
                         <InputLabel htmlFor='email'>E-mailadres</InputLabel>
                         <Input
                             id='email'
                             name='email'
+                            type='email'
                             onChange={ this.onChange }
                             value={ this.state.email }
                             autoFocus />
@@ -86,6 +120,7 @@ class RegisterForm extends Component {
                     <Typography component='h3' variant='h6'>
                         Contactgegevens
                     </Typography>
+                    <DWDDivider />
 
                     <FormControl margin='normal' required fullWidth>
                         <InputLabel htmlFor='firstName'>Voornaam</InputLabel>
