@@ -5,7 +5,7 @@ import './styles/app.scss'
 import { Router } from 'react-router'
 import createBrowserHistory from 'history/createBrowserHistory'
 
-import { firebase, database } from './firebase'
+import { firebase } from './firebase'
 
 import Grid from '@material-ui/core/Grid'
 
