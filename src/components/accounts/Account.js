@@ -1,35 +1,42 @@
 import React, { Component } from 'react'
 
-import PropTypes from 'prop-types'
-
 import DWDPaper from '../DWDPaper'
 
 import TextField from '@material-ui/core/TextField'
+import * as firebase from '../../firebase/firebase'
+import * as database from '../../firebase/database'
 
 class Account extends Component {
 
-    static propTypes = {
-        email: PropTypes.string.isRequired,
-        firstName: PropTypes.string.isRequired,
-        lastName: PropTypes.string.isRequired,
-        company: PropTypes.string,
-        country: PropTypes.string.isRequired,
-        postalCode: PropTypes.string.isRequired,
-        number: PropTypes.string.isRequired
+    constructor(props) {
+        super(props)
+
+        this.state = {
+            account: {
+
+            }
+        }
     }
 
-    static defaultProps = {
-        company: ''
+    componentDidMount() {
+        firebase.auth.onAuthStateChanged(async(authUser) => {
+            try {
+                const account = await database.readAccountInfo(authUser.uid)
+                this.setState({ account: account.val() })
+            } catch (error) {
+                this.setState({ account: null })
+            }
+        })
     }
 
     render() {
-        const { email, firstName, lastName, company, country, postalCode, number } = this.props
+        const { email, firstName, lastName, company, country, postalCode, number } = this.state.account
 
         return (
             <DWDPaper>
                 <TextField
                     label='E-mailadres'
-                    value={ email }
+                    value={ email ? email : '' }
                     margin='normal'
                     fullWidth
                     disabled
@@ -37,7 +44,7 @@ class Account extends Component {
 
                 <TextField
                     label='Voornaam'
-                    value={ firstName }
+                    value={ firstName ? firstName : '' }
                     margin='normal'
                     fullWidth
                     disabled
@@ -45,7 +52,7 @@ class Account extends Component {
 
                 <TextField
                     label='Achternaam'
-                    value={ lastName }
+                    value={ lastName ? lastName : '' }
                     margin='normal'
                     fullWidth
                     disabled
@@ -53,7 +60,7 @@ class Account extends Component {
 
                 <TextField
                     label='Bedrijf'
-                    value={ company }
+                    value={ company ? company : '' }
                     margin='normal'
                     fullWidth
                     disabled
@@ -61,7 +68,7 @@ class Account extends Component {
 
                 <TextField
                     label='Land'
-                    value={ country }
+                    value={ country ? country : '' }
                     margin='normal'
                     fullWidth
                     disabled
@@ -69,7 +76,7 @@ class Account extends Component {
 
                 <TextField
                     label='Postcode'
-                    value={ postalCode }
+                    value={ postalCode ? postalCode : '' }
                     margin='normal'
                     fullWidth
                     disabled
@@ -77,7 +84,7 @@ class Account extends Component {
 
                 <TextField
                     label='Huisnummer'
-                    value={ number }
+                    value={ number ? number : '' }
                     margin='normal'
                     fullWidth
                     disabled

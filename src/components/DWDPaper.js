@@ -8,6 +8,7 @@ import withStyles from '@material-ui/core/styles/withStyles'
 
 const styles = (theme) => ({
     paper: {
+        width: '600px',
         marginTop: theme.spacing.unit * 8,
         display: 'flex',
         flexDirection: 'column',

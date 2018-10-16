@@ -1,40 +1,17 @@
 import React, { Component } from 'react'
 
-import PropTypes from 'prop-types'
-
-import {Redirect, Route, Switch} from 'react-router'
+import { Route, Switch } from 'react-router-dom'
 
 import Account from '../accounts/Account'
-
+import Welcome from '../dashboards/Welcome'
 
 class AuthenticatedRoutes extends Component {
 
-    static propTypes = {
-        authUser: PropTypes.object.isRequired
-    }
-
     render() {
-        const { authUser } = this.props
-
         return (
             <Switch>
-                <Route
-                    path='/account'
-                    exact
-                    component={
-                        <Account
-                            email={ authUser.email }
-                            firstName={ authUser.firstName }
-                            lastName={ authUser.lastName }
-                            company={ authUser.company }
-                            country={ authUser.country }
-                            postalCode={ authUser.postalCode }
-                            number={ authUser.number }
-                        />
-                    } />
-                <Route path='*' render={ () => (
-                    <Redirect to='/account' />
-                ) }/>
+                <Route path='/account' exact component={ Account } />
+                <Route path='*' component={ Welcome }/>
             </Switch>
         )
     }

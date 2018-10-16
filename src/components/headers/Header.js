@@ -44,7 +44,7 @@ class Header extends Component {
             <div className={ classes.root }>
                 <AppBar position='static'>
                     <Toolbar>
-                        <Typography variant='h6' color='inherit' className={ classes.brand }>
+                        <Typography component='h6' variant='h6' color='inherit' className={ classes.brand }>
                             Drukwerkdeal intake
                         </Typography>
 

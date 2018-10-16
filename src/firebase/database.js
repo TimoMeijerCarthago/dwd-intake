@@ -10,3 +10,7 @@ export const createAccountInfo = (id, email, firstName, lastName, company, count
         postalCode,
         number
     })
+
+export const readAccountInfo = (id) => {
+    return db.ref(`accounts/${id}`).once('value')
+}
